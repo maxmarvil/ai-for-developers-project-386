@@ -3,14 +3,14 @@
 ## Project overview
 
 Web application for booking time slots without visitor registration.
-Administrator manages in a Filament-protected admin panel (out of scope for SPA).
+Administrator manages in a Filament-protected admin panel.
 
 Tech stack as per [REQUIREMENTS.md](../REQUIREMENTS.md):
-PHP 8.x + Laravel, Filament admin, Blade templates + HTMX, PostgreSQL.
+PHP 8.x + Laravel, Filament admin, React SPA, PostgreSQL.
 
 Agreement per `web/front_plan.md`: the public face is a **decoupled
 React SPA** consuming a JSON API via OpenAPI contract (TypeSpec in `api/`).
-Backend / Filament admin are not part of this task.
+The Laravel backend and Filament admin panel are implemented in `backend/`.
 
 CI (`hexlet-check.yml`) runs: lint, tests, Playwright E2E.
 
@@ -33,9 +33,10 @@ CI (`hexlet-check.yml`) runs: lint, tests, Playwright E2E.
 | CSS | **Tailwind CSS 3** + `tailwind-merge` + `clsx` | Utility-first. shadcn/ui primitives in `components/ui/`. Mobile-friendly (NFR-3). |
 | UI primitives | **shadcn/ui** (Radix primitives) | `Button`, `Card`, `Input` — hand-tailored, no heavy component libs |
 | Calendar grid | **Custom** (no fullcalendar/FCP) | 14 days × slots of 15/30-min step. React-rendered table/grid (BR-5). Bookable dates = tomorrow through +14 days. Current day excluded (FR-14 / D-6). Pending booking highlight via dashed amber outline (FR-15). |
-| Mock server | **Stoplight Prism** (`@stoplight/prism-cli`) | OpenAPI 3 spec → in-memory JSON API. Proxy `npm run dev`. |
+| Backend API | **Laravel 12** in `backend/` | Public API under `/api/v1`, Filament admin under `/admin`. |
+| Mock server | **Stoplight Prism** (`@stoplight/prism-cli`) | OpenAPI 3 spec → in-memory JSON API. Can still be started with `npm run mock` for isolated frontend work. |
 | Testing — unit | **Vitest 2** + **@testing-library/react** | `vitest run`, jsdom environment, globals enabled, `src/test/setup.ts` for cleanup |
-| Testing — E2E | **Playwright** | Chromium, trace on first retry. Two webServer processes: Prism (:4010, `/api/v1`) + Vite dev server (:5173). Tests in `e2e/`. |
+| Testing — E2E | **Playwright** | Chromium, trace on first retry. Tests in `e2e/`. Dev server now proxies `/api/v1` to the Laravel backend; E2E setup needs the backend running. |
 
 ### Key constants and business rules (FR / BR / D refs)
 
@@ -99,7 +100,7 @@ Front-end imports only what's needed from the contract:
 | `npm run build` | Production build (`tsc -b && vite build`) |
 | `npm test` | Run Vitest unit tests (`vitest run`) |
 | `npm run test:watch` | Watch mode (`vitest`) |
-| `npm run test:e2e` | Playwright E2E (starts Prism + Vite via config) |
+| `npm run test:e2e` | Playwright E2E (requires Laravel backend running) |
 | `npm run mock` | Standalone Stoplight Prism on :4010 |
 | `npm run lint` | ESLint + Prettier check (`eslint . && prettier --check .`) |
 | `npm run format` | Prettier auto-fix (`prettier --write .`) |
@@ -110,13 +111,13 @@ Front-end imports only what's needed from the contract:
 ```
 web/
 ├── package.json                    # Scripts: dev, build, mock, test, lint
-├── vite.config.ts                  # Jest-dom setup, alias @/, proxy for Prism /mock
+├── vite.config.ts                  # Jest-dom setup, alias @/, proxy for Laravel backend
 ├── tsconfig.json                   # Strict TS, @/* → src/*
 ├── postcss.config.js               # Tailwind config loader
 ├── tailwind.config.ts              # Theme + plugins (shadcn/ui preset)
 ├── index.html                      # Single HTML entry point
 ├── e2e/                            # Playwright tests
-│   └── booking.spec.ts             #  Booking flow E2E against Prism mock
+│   └── booking.spec.ts             # Booking flow E2E
 ├── src/
 │   ├── main.tsx                    # App bootstrap: QueryClient + BrowserRouter + RouterProvider
 │   ├── App.tsx                     # Top-level routes: / → BookingPage
@@ -141,7 +142,7 @@ web/
 │       └── ui/                   # shadcn/ui primitives (Button, Card, Input)
 ├── test/                         # Vitest configuration & fixtures
     ├── setup.ts                    # jest-dom extensions + afterEach cleanup
-    └── booking.spec.ts             # Booking flow E2E against Prism mock
+    └── booking.spec.ts             # Booking flow E2E
 ```
 
 ## Testing strategy
@@ -156,17 +157,17 @@ Each public-facing module should have at least one `*.test.ts(x)` file:
 
 ### E2E tests (`playwright`)
 
-Flows against the Prism-generated mock server:
+Flows against the real Laravel backend (or the Prism mock server for isolated frontend work):
 1. Navigate to `/`, see event type list with icon markers.
 2. Pick an event type → slot grid re-renders.
 3. Select one or more sequential slots → "Your data" form appears.
 4. Fill name/email/phone → submit → redirect to `/confirmation`.
 
-Prism mock runs on `:4010`, Vite dev server proxies `/api/v1` → `:4010`.
+Vite dev server proxies `/api/v1` → `http://localhost:8000` (Laravel backend).
 
 ### Quality gates (CI / NFR-4)
 
 1. `npm run lint` — ESLint + Prettier check.
 2. `npm run typecheck` — `tsc --noEmit`.
 3. `npm test` — Vitest unit tests.
-4. `npm run test:e2e` — Playwright E2E against Prism mock.
+4. `npm run test:e2e` — Playwright E2E against the Laravel backend.
