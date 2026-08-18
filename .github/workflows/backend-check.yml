@@ -15,20 +15,6 @@ jobs:
         working-directory: backend
 
     services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: booking_test
-          POSTGRES_USER: booking
-          POSTGRES_PASSWORD: booking
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
       redis:
         image: redis:7-alpine
         ports:
@@ -51,16 +37,13 @@ jobs:
           coverage: none
 
       - name: Copy .env.testing
-        run: cp .env.testing .env.testing
+        run: cp ../.env.testing .env.testing
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Generate app key
         run: php artisan key:generate --env=testing --ansi
-
-      - name: Run migrations
-        run: php artisan migrate --env=testing --force --ansi
 
       - name: Run Pint
         run: ./vendor/bin/pint --test
@@ -70,3 +53,5 @@ jobs:
 
       - name: Run Pest
         run: ./vendor/bin/pest --no-coverage
+        env:
+          REDIS_HOST: 127.0.0.1

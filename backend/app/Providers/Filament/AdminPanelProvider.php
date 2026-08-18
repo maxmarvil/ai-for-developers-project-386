@@ -6,7 +6,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -24,18 +23,18 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-              ->id('admin')
-              ->path('admin')
-              ->login()
-              ->colors([
+            ->id('admin')
+            ->path('admin')
+            ->login()
+            ->colors([
                 'primary' => Color::Amber,
             ])
-              ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-              ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-              ->widgets([
-                 AccountWidget::class,
-                 FilamentInfoWidget::class,
-              ])
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->widgets([
+                AccountWidget::class,
+                FilamentInfoWidget::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
