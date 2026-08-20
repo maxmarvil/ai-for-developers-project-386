@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -51,4 +52,9 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function bookingDate(): Carbon
+{
+    return Carbon::today()->addDays(7);
 }

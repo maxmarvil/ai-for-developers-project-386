@@ -10,24 +10,24 @@ use Carbon\Carbon;
 it('returns slots for a valid date and event type', function () {
     $eventType = EventType::factory()->duration30()->create();
     AvailabilityRule::factory()->create([
-        'weekday' => Carbon::parse('2026-08-19')->format('w'),
+        'weekday' => bookingDate()->format('w'),
         'start_time' => '09:00:00',
         'end_time' => '10:00:00',
     ]);
 
-    $response = $this->getJson('/api/v1/slots?event_type_id='.$eventType->id.'&date=2026-08-19');
+    $response = $this->getJson('/api/v1/slots?event_type_id='.$eventType->id.'&date='.bookingDate()->format('Y-m-d'));
 
     $response->assertOk()
-        ->assertJsonPath('date', '2026-08-19')
+        ->assertJsonPath('date', bookingDate()->format('Y-m-d'))
         ->assertJsonPath('event_type_id', $eventType->id)
         ->assertJsonCount(2, 'slots');
 });
 
 it('returns 404 for a closed date', function () {
     $eventType = EventType::factory()->create();
-    AvailabilityException::factory()->onDate('2026-08-19')->create();
+    AvailabilityException::factory()->onDate(bookingDate()->format('Y-m-d'))->create();
 
-    $this->getJson('/api/v1/slots?event_type_id='.$eventType->id.'&date=2026-08-19')
+    $this->getJson('/api/v1/slots?event_type_id='.$eventType->id.'&date='.bookingDate()->format('Y-m-d'))
         ->assertNotFound()
         ->assertJsonPath('code', 'NOT_FOUND');
 });
@@ -35,7 +35,7 @@ it('returns 404 for a closed date', function () {
 it('returns empty slots for an inactive event type', function () {
     $eventType = EventType::factory()->inactive()->create();
 
-    $this->getJson('/api/v1/slots?event_type_id='.$eventType->id.'&date=2026-08-19')
+    $this->getJson('/api/v1/slots?event_type_id='.$eventType->id.'&date='.bookingDate()->format('Y-m-d'))
         ->assertOk()
         ->assertJsonCount(0, 'slots');
 });

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 use App\Models\AvailabilityRule;
 use App\Models\EventType;
-use Carbon\Carbon;
 
 it('prevents double booking of the same slot', function () {
     AvailabilityRule::factory()->create([
-        'weekday' => Carbon::parse('2026-08-19')->format('w'),
+        'weekday' => bookingDate()->format('w'),
         'start_time' => '09:00:00',
         'end_time' => '12:00:00',
     ]);
@@ -16,7 +15,7 @@ it('prevents double booking of the same slot', function () {
     $eventType = EventType::factory()->duration30()->create();
     $payload = [
         'event_type_id' => $eventType->id,
-        'date' => '2026-08-19',
+        'date' => bookingDate()->format('Y-m-d'),
         'slots' => [['start' => '10:00']],
         'guest' => ['name' => 'First', 'email' => 'first@example.com', 'phone' => '+7 (999) 000-00-00'],
     ];
