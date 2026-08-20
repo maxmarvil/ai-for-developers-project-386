@@ -30,7 +30,7 @@
 - `web/src/lib/phone.ts` — валидация телефона `+7 (XXX) XXX-XX-XX` (NFR-1) и email
 - `web/src/features/booking/` — календарь-сетка, выбор типа события, выбор последовательных слотов, форма гостя, подтверждение
 - `web/src/components/ui/` — shadcn/ui примитивы
-- `web/e2e/` — Playwright сценарии
+- `web/e2e/` — Playwright сценарии (API fixtures via `page.route`, не Prism/Laravel; см. `docs/adr/0001-e2e-playwright-api-fixtures.md`)
 
 ## Ключевые задачи реализации
 
@@ -40,7 +40,7 @@
 4. Util даты/времени (Europe/Moscow, 14 дней, текущий день недоступен, шаг 15/30) и клиентские валидации (email, телефон, лимит 2ч и последовательность слотов как UX-подсказки; бэкенд всё равно источник правды).
 5. UI-поток: выбор типа события → сетка слотов (pending визуально выделены, FR-15) → выбор одного/нескольких последовательных слотов (FR-12) → форма гостя (предзаполнение из localStorage) → POST → страница подтверждения.
 6. Обработка ошибок API по `ErrorCode` (LIMIT_EXCEEDED, SLOT_TAKEN, SLOT_UNAVAILABLE, DATE_OUT_OF_RANGE, SLOT_NOT_SEQUENTIAL, VALIDATION_ERROR).
-7. Тесты: юниты util/валидаций, компонентные тесты сетки/формы, E2E happy-path бронирования против Prism-мока.
+7. Тесты: юниты util/валидаций, компонентные тесты сетки/формы, E2E UC-1…UC-10 против Playwright API fixtures (не Prism).
 8. **Создать `AGENTS.md`** в корне с описанием стека, структуры, команд (dev/mock/gen/test/lint) и конвенций.
 
 ## AGENTS.md (содержание)
@@ -50,5 +50,5 @@
 ## Проверка
 
 - `npm run lint`, `tsc --noEmit`, `npm test` (Vitest) — зелёные.
-- Playwright happy-path проходит против Prism.
+- Playwright e2e (happy + errors + form) проходит против in-test API fixtures.
 - Ручная проверка на мобильной ширине (NFR-3).

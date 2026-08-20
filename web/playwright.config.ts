@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Runs the Prism mock and the Vite dev server together, then drives the
-// public booking happy-path against them.
+// Vite only; /api/v1 is mocked in tests via page.route (see docs/adr/0001).
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -11,18 +10,10 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: [
-    {
-      command: 'npm run mock',
-      url: 'http://localhost:4010',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
-      command: 'npm run dev',
-      url: 'http://localhost:5173',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
+  },
 });

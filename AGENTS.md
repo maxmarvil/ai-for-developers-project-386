@@ -36,7 +36,7 @@ CI (`hexlet-check.yml`) runs: lint, tests, Playwright E2E.
 | Backend API | **Laravel 12** in `backend/` | Public API under `/api/v1`, Filament admin under `/admin`. |
 | Mock server | **Stoplight Prism** (`@stoplight/prism-cli`) | OpenAPI 3 spec → in-memory JSON API. Can still be started with `npm run mock` for isolated frontend work. |
 | Testing — unit | **Vitest 2** + **@testing-library/react** | `vitest run`, jsdom environment, globals enabled, `src/test/setup.ts` for cleanup |
-| Testing — E2E | **Playwright** | Chromium, trace on first retry. Tests in `e2e/`. Dev server now proxies `/api/v1` to the Laravel backend; E2E setup needs the backend running. |
+| Testing — E2E | **Playwright** | Chromium, trace on first retry. Tests in `e2e/`. API via `page.route` fixtures (not Prism/Laravel). See [docs/adr/0001-e2e-playwright-api-fixtures.md](./docs/adr/0001-e2e-playwright-api-fixtures.md). |
 
 ### Key constants and business rules (FR / BR / D refs)
 
@@ -100,7 +100,7 @@ Front-end imports only what's needed from the contract:
 | `npm run build` | Production build (`tsc -b && vite build`) |
 | `npm test` | Run Vitest unit tests (`vitest run`) |
 | `npm run test:watch` | Watch mode (`vitest`) |
-| `npm run test:e2e` | Playwright E2E (requires Laravel backend running) |
+| `npm run test:e2e` | Playwright E2E (Vite + in-test API fixtures) |
 | `npm run mock` | Standalone Stoplight Prism on :4010 |
 | `npm run lint` | ESLint + Prettier check (`eslint . && prettier --check .`) |
 | `npm run format` | Prettier auto-fix (`prettier --write .`) |
@@ -175,17 +175,17 @@ Each public-facing module should have at least one `*.test.ts(x)` file:
 
 ### E2E tests (`playwright`)
 
-Flows against the real Laravel backend (or the Prism mock server for isolated frontend work):
-1. Navigate to `/`, see event type list with icon markers.
-2. Pick an event type → slot grid re-renders.
-3. Select one or more sequential slots → "Your data" form appears.
-4. Fill name/email/phone → submit → redirect to `/confirmation`.
+Scenarios from [docs/user-scenarios.md](./docs/user-scenarios.md); stack decision in
+[docs/adr/0001-e2e-playwright-api-fixtures.md](./docs/adr/0001-e2e-playwright-api-fixtures.md).
 
-Vite dev server proxies `/api/v1` → `http://localhost:8000` (Laravel backend).
+- `webServer`: Vite only; `/api/v1` mocked with `installMockApi(page, overrides?)`.
+- Clock frozen to `2026-03-11T12:00:00+03:00` (MSK); open date `2026-03-13`, closed `2026-03-18` (hidden in picker).
+- Specs by flow: `booking-happy.spec.ts` (UC-1…4), `booking-errors.spec.ts` (UC-5…7), `form-validation.spec.ts` (UC-8…10).
+- Test titles include `UC-N`; selectors prefer `data-testid` (`slot-10:00`, `date-2026-03-13`, guest fields, `api-error` + `data-error-code`).
 
 ### Quality gates (CI / NFR-4)
 
 1. `npm run lint` — ESLint + Prettier check.
 2. `npm run typecheck` — `tsc --noEmit`.
 3. `npm test` — Vitest unit tests.
-4. `npm run test:e2e` — Playwright E2E against the Laravel backend.
+4. `npm run test:e2e` — Playwright E2E (fixtures; intended CI gate, workflow wiring separate).

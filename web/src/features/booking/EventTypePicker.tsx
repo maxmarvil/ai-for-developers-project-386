@@ -19,6 +19,7 @@ export function EventTypePicker({ eventTypes, selectedId, onSelect }: Props) {
             type="button"
             role="radio"
             aria-checked={active}
+            data-testid={`event-type-${et.id}`}
             onClick={() => onSelect(et.id)}
             className={cn(
               'flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors',

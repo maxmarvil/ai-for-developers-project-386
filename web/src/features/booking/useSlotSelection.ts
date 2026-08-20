@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Slot } from '@/api/client';
 import { MAX_TOTAL_MINUTES, minutesBetween } from '@/lib/datetime';
 
@@ -10,11 +10,21 @@ import { MAX_TOTAL_MINUTES, minutesBetween } from '@/lib/datetime';
  * - Selection must stay contiguous: only a slot adjacent to the current run can be added.
  * - Toggling a slot inside the run collapses the run down to that slot.
  * - Total duration may not exceed MAX_TOTAL_MINUTES.
+ * - When slots refresh, non-free starts are dropped from selection (UC-5).
  */
-export function useSlotSelection(durationMinutes: number) {
+export function useSlotSelection(durationMinutes: number, slots: Slot[] = []) {
   const [selected, setSelected] = useState<string[]>([]);
 
   const reset = useCallback(() => setSelected([]), []);
+
+  useEffect(() => {
+    if (slots.length === 0) return;
+    const freeStarts = new Set(slots.filter((s) => s.status === 'free').map((s) => s.start));
+    setSelected((prev) => {
+      const next = prev.filter((start) => freeStarts.has(start));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [slots]);
 
   const toggle = useCallback(
     (slot: Slot) => {

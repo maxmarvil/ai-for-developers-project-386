@@ -43,45 +43,66 @@ export function GuestForm({ initial, submitting, onSubmit }: Props) {
   }
 
   return (
-    <form className="flex flex-col gap-3" onSubmit={handleSubmit} noValidate>
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={handleSubmit}
+      noValidate
+      data-testid="guest-form"
+    >
       <label className="flex flex-col gap-1 text-sm">
         Имя*
         <Input
+          data-testid="guest-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           aria-invalid={!!errors.name}
           placeholder="Иван Иванов"
         />
-        {errors.name && <span className="text-xs text-red-600">{errors.name}</span>}
+        {errors.name && (
+          <span className="text-xs text-red-600" data-testid="guest-name-error">
+            {errors.name}
+          </span>
+        )}
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
         Email*
         <Input
+          data-testid="guest-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           aria-invalid={!!errors.email}
           placeholder="ivan@example.com"
         />
-        {errors.email && <span className="text-xs text-red-600">{errors.email}</span>}
+        {errors.email && (
+          <span className="text-xs text-red-600" data-testid="guest-email-error">
+            {errors.email}
+          </span>
+        )}
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
         Телефон*
         <Input
+          data-testid="guest-phone"
           type="tel"
           value={phone}
           onChange={(e) => setPhone(formatPhone(e.target.value))}
           aria-invalid={!!errors.phone}
           placeholder="+7 (999) 123-45-67"
         />
-        {errors.phone && <span className="text-xs text-red-600">{errors.phone}</span>}
+        {errors.phone && (
+          <span className="text-xs text-red-600" data-testid="guest-phone-error">
+            {errors.phone}
+          </span>
+        )}
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
         Комментарий
         <textarea
+          data-testid="guest-comment"
           className="min-h-[72px] rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -89,7 +110,7 @@ export function GuestForm({ initial, submitting, onSubmit }: Props) {
         />
       </label>
 
-      <Button type="submit" disabled={submitting}>
+      <Button type="submit" disabled={submitting} data-testid="guest-submit">
         {submitting ? 'Отправка…' : 'Забронировать'}
       </Button>
     </form>

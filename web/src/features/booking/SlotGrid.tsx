@@ -28,6 +28,7 @@ export function SlotGrid({ slots, selected, onToggle }: Props) {
             type="button"
             disabled={!isFree}
             aria-pressed={isSelected}
+            data-testid={`slot-${slot.start}`}
             data-status={slot.status}
             onClick={() => onToggle(slot)}
             className={cn(

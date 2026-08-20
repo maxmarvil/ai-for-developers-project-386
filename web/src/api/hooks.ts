@@ -73,11 +73,18 @@ export function useCreateBooking() {
       return data;
     },
     onSuccess: (_data, variables) => {
-      // Invalidate slots for the booked date so the grid reflects the new state.
       qc.invalidateQueries({
         queryKey: queryKeys.slots(variables.event_type_id, variables.date),
       });
       qc.invalidateQueries({ queryKey: ['guest-bookings'] });
+    },
+    onError: (error, variables) => {
+      // UC-5: refresh grid so the taken slot shows as pending/confirmed.
+      if (error instanceof BookingApiError && error.code === 'SLOT_TAKEN') {
+        qc.invalidateQueries({
+          queryKey: queryKeys.slots(variables.event_type_id, variables.date),
+        });
+      }
     },
   });
 }

@@ -172,6 +172,28 @@ describe('useSlotSelection (durationMinutes=15)', () => {
     });
   });
 
+  describe('prune non-free after slots refresh (UC-5)', () => {
+    test('drops selected starts that are no longer free', () => {
+      const free = [makeSlot('10:00'), makeSlot('10:15'), makeSlot('10:30')];
+      const { result, rerender } = renderHook(
+        ({ slots }: { slots: Slot[] }) => useSlotSelection(15, slots),
+        { initialProps: { slots: free } },
+      );
+
+      act(() => result.current.toggle(free[0]));
+      act(() => result.current.toggle(free[1]));
+      expect(result.current.selected).toEqual(['10:00', '10:15']);
+
+      const afterRace = [
+        makeSlot('10:00', 'pending'),
+        makeSlot('10:15', 'free'),
+        makeSlot('10:30', 'free'),
+      ];
+      rerender({ slots: afterRace });
+      expect(result.current.selected).toEqual(['10:15']);
+    });
+  });
+
   describe('duration parameter changes', () => {
     test('keeps current selection on re-render (reset is done by caller via useEffect)', () => {
       const slots = freshSlots();
