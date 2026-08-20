@@ -20,7 +20,7 @@ function bookingPayload(EventType $eventType, string $date, array $slots, array 
 
 beforeEach(function () {
     AvailabilityRule::factory()->create([
-        'weekday' => Carbon::parse('2026-08-19')->format('w'),
+        'weekday' => bookingDate()->format('w'),
         'start_time' => '09:00:00',
         'end_time' => '14:00:00',
     ]);
@@ -31,7 +31,7 @@ it('creates a booking', function () {
 
     $response = $this->postJson('/api/v1/bookings', bookingPayload(
         $eventType,
-        '2026-08-19',
+        bookingDate()->format('Y-m-d'),
         ['10:00'],
         ['name' => 'Ivan', 'email' => 'ivan@example.com', 'phone' => '+7 (999) 000-00-00'],
     ));
@@ -74,7 +74,7 @@ it('rejects non-sequential slots', function () {
 
     $this->postJson('/api/v1/bookings', bookingPayload(
         $eventType,
-        '2026-08-19',
+        bookingDate()->format('Y-m-d'),
         ['10:00', '11:00'],
         ['name' => 'Ivan', 'email' => 'ivan@example.com', 'phone' => '+7 (999) 000-00-00'],
     ))
@@ -89,13 +89,13 @@ it('rejects already taken slots', function () {
     Booking::factory()
         ->forEventType($eventType)
         ->forGuest($guest)
-        ->onDate('2026-08-19')
+        ->onDate(bookingDate()->format('Y-m-d'))
         ->atTime('10:00:00')
         ->create();
 
     $this->postJson('/api/v1/bookings', bookingPayload(
         $eventType,
-        '2026-08-19',
+        bookingDate()->format('Y-m-d'),
         ['10:00'],
         ['name' => 'Other', 'email' => 'other@example.com', 'phone' => '+7 (999) 000-00-00'],
     ))
@@ -112,13 +112,13 @@ it('rejects exceeding daily limit', function () {
     Booking::factory()
         ->forEventType($eventType)
         ->forGuest($guest)
-        ->onDate('2026-08-19')
+        ->onDate(bookingDate()->format('Y-m-d'))
         ->atTime('09:00:00', 90)
         ->create();
 
     $this->postJson('/api/v1/bookings', bookingPayload(
         $eventType,
-        '2026-08-19',
+        bookingDate()->format('Y-m-d'),
         ['11:00', '11:30', '12:00'],
         ['name' => $guest->name, 'email' => $guest->email, 'phone' => $guest->phone],
     ))

@@ -124,6 +124,24 @@ fix(api): enforce 2h daily limit per guest email
 docs: add visitor user scenarios
 ```
 
+PRs merge into `main` via **squash**; the PR title must itself be a
+conventional commit (release-please reads commit titles on `main`).
+
+## Releases
+
+Releases are automated by [release-please](https://github.com/googleapis/release-please)
+(`.github/workflows/release-please.yml`). One release covers the whole repo;
+see [docs/adr/0002-release-please-single-release.md](./docs/adr/0002-release-please-single-release.md).
+
+- Version source: `web/package.json`; manifest — `.release-please-manifest.json`,
+  config — `release-please-config.json` (single package `web`,
+  `include-component-in-tag: false` → tags `vX.Y.Z`).
+- On push to `main`, release-please maintains a release PR; merging it tags
+  the release and publishes a GitHub Release with `web/CHANGELOG.md`.
+  Nothing is deployed after the release.
+- Any `feat`/`fix` bumps the release regardless of scope; `docs`, `ci`,
+  `chore` stay out of the changelog.
+
 ## Code organisation
 
 ```
