@@ -106,6 +106,24 @@ Front-end imports only what's needed from the contract:
 | `npm run format` | Prettier auto-fix (`prettier --write .`) |
 | `npm run typecheck` | TypeScript compiler (`tsc --noEmit`) |
 
+## Git conventions
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/):
+`<type>(<optional scope>): <short imperative summary>`.
+
+- Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`.
+- Scope (optional): affected area, e.g. `api`, `web`, `admin`, `e2e`.
+- Summary in English, lowercase, no trailing period, ≤ 72 chars.
+- Breaking changes: `!` after type/scope (e.g. `feat(api)!:`) plus a `BREAKING CHANGE:` footer.
+- One commit = one logical change; body (optional) explains *why*, not *what*.
+
+Examples:
+```
+feat(web): add slot grid with pending highlight
+fix(api): enforce 2h daily limit per guest email
+docs: add visitor user scenarios
+```
+
 ## Code organisation
 
 ```
