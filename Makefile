@@ -1,81 +1,93 @@
-.PHONY: up down build install backend-install frontend-install dev backend-dev frontend-dev \
-        test backend-test frontend-test lint backend-lint frontend-lint migrate fresh seed \
-        composer artisan tinker
+.PHONY: up down install dev backend-dev frontend-dev \
+        test backend-test frontend-test lint backend-lint frontend-lint \
+        migrate fresh seed composer artisan tinker \
+        prod-build prod-preview e2e
 
-# Docker Compose
+# ---------- Infrastructure (docker compose) ----------
+
 up:
 	docker compose up -d
 
 down:
 	docker compose down
 
-build:
-	docker compose build
+# ---------- Installation (host) ----------
 
-# Installation
 install: backend-install frontend-install
 
 backend-install:
-	docker compose run --rm php composer install
+	cd backend && composer install
 
 frontend-install:
 	cd web && npm install
 
-# Development
+# ---------- Development (host) ----------
+
 dev:
-	make up
-	@echo "Backend available at http://localhost:8000"
-	@echo "Run 'make frontend-dev' in another terminal"
+	$(MAKE) up
+	@echo "Infra is up: postgres :5432, redis :6379, adminer :8080"
+	@echo "Run 'make backend-dev' and 'make frontend-dev' in separate terminals"
 
 backend-dev:
-	docker compose up php nginx redis postgres
+	cd backend && php artisan serve
 
 frontend-dev:
 	cd web && npm run dev
 
-# Testing
+# ---------- Testing ----------
+
 test: backend-test frontend-test
 
 backend-test:
-	docker compose run --rm -v "$(PWD)/.env.testing:/env/.env.testing:ro" php sh -c 'cp /env/.env.testing .env.testing && ./vendor/bin/pest; status=$$?; rm -f .env.testing; exit $$status'
+	cd backend && ./vendor/bin/pest --no-coverage
 
 frontend-test:
 	cd web && npm test
 
-# Linting
+e2e:
+	cd web && npm run test:e2e
+
+# ---------- Linting ----------
+
 lint: backend-lint frontend-lint
 
 backend-lint:
-	docker compose run --rm php ./vendor/bin/pint --test
-	docker compose run --rm php ./vendor/bin/phpstan analyse --memory-limit=512M
+	cd backend && ./vendor/bin/pint --test
+	cd backend && ./vendor/bin/phpstan analyse --memory-limit=512M --no-progress
 
 frontend-lint:
 	cd web && npm run lint
 
-# Formatting
-backend-format:
-	docker compose run --rm php ./vendor/bin/pint
+# ---------- Database (host php talks to compose postgres) ----------
 
-# Database
 migrate:
-	docker compose run --rm php php artisan migrate
+	cd backend && php artisan migrate
 
 fresh:
-	docker compose run --rm php php artisan migrate:fresh
+	cd backend && php artisan migrate:fresh
 
 seed:
-	docker compose run --rm php php artisan db:seed
+	cd backend && php artisan db:seed
 
-# Shortcuts
+# ---------- Shortcuts ----------
+
 composer:
-	docker compose run --rm php composer $(filter-out $@,$(MAKECMDGOALS))
+	cd backend && composer $(filter-out $@,$(MAKECMDGOALS))
 
 artisan:
-	docker compose run --rm php php artisan $(filter-out $@,$(MAKECMDGOALS))
+	cd backend && php artisan $(filter-out $@,$(MAKECMDGOALS))
 
 tinker:
-	docker compose run --rm php php artisan tinker
+	cd backend && php artisan tinker
 
 # Catch-all for arguments to composer/artisan
 %:
 	@:
+
+# ---------- Production preview ----------
+
+prod-build:
+	docker compose --profile prod build app
+
+prod-preview:
+	docker compose --profile prod up app
