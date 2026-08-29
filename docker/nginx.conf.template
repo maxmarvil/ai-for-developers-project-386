@@ -19,8 +19,9 @@ server {
         try_files $uri /index.php?$query_string;
     }
 
-    # Filament admin panel and Livewire traffic go to Laravel
-    location ~ ^/(admin|livewire|storage)(/|$) {
+    # Filament admin panel and Livewire traffic go to Laravel.
+    # Livewire 3 serves assets/AJAX under a hashed prefix (/livewire-<hash>/).
+    location ~ ^/(admin|livewire|storage|livewire-[a-f0-9]+)(/|$) {
         try_files $uri /index.php?$query_string;
     }
 
