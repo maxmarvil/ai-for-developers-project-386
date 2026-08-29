@@ -8,8 +8,11 @@ server {
 
     client_max_body_size 20m;
 
-    # Long-lived cache for hashed SPA assets
-    location /spa/assets/ {
+    # Long-lived cache for hashed SPA assets.
+    # Vite builds with the default base, so index.html references
+    # /assets/...; the SPA dist lives under public/spa/.
+    location /assets/ {
+        root /var/www/html/public/spa;
         add_header Cache-Control "public, max-age=31536000, immutable";
         try_files $uri =404;
     }
