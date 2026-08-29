@@ -17,8 +17,10 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TimePicker;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Exceptions\Halt;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -103,6 +105,16 @@ class BookingResource extends Resource
                     ->requiresConfirmation()
                     ->visible(fn (Booking $record): bool => $record->isPending())
                     ->action(function (Booking $record): void {
+                        if ($record->overlapsConfirmedBooking()) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Слот уже занят')
+                                ->body('На это время уже есть подтверждённая заявка.')
+                                ->send();
+
+                            throw new Halt;
+                        }
+
                         $record->update(['status' => BookingStatus::CONFIRMED]);
                     }),
                 Action::make('cancel')
