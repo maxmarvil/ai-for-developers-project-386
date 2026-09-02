@@ -1,5 +1,5 @@
 import { addDays, addMinutes, format, parse } from 'date-fns';
-import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 /** Single source of truth for time rules (D-3, FR-13, FR-14, BR-5). */
 export const APP_TIMEZONE = 'Europe/Moscow';
@@ -64,11 +64,6 @@ export function areSlotsSequential(slots: { start: string; end: string }[]): boo
     if (slots[i - 1].end !== slots[i].start) return false;
   }
   return true;
-}
-
-/** Convert a "YYYY-MM-DD" + "HH:mm" (app tz) to an absolute UTC Date. */
-export function toUtc(dateIso: string, time: string): Date {
-  return fromZonedTime(`${dateIso}T${time}:00`, APP_TIMEZONE);
 }
 
 /** Format "YYYY-MM-DD" into a short human label, e.g. "пн, 17 авг". */

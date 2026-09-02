@@ -42,7 +42,7 @@ CI (`hexlet-check.yml`) runs: lint, tests, Playwright E2E.
 
 | Constant | File | Value | Rule |
 |----------|------|-------|------|
-| `APP_TIMEZONE` | `lib/datetime.ts` | `'Europe/Moscow'` | D-3 |
+| `APP_TIMEZONE` | `lib/datetime.ts` | `'Europe/Moscow'` | D-3, ADR-0004 (naive MSK, no UTC over the wire) |
 | `BOOKING_HORIZON_DAYS` | `lib/datetime.ts` | `14` | FR-13, D-6 |
 | `MAX_TOTAL_MINUTES` | `lib/datetime.ts` | `120` | BR-1 (2h per guest) |
 | Duration options | `models/admin.tsp` / OpenAPI | `15` or `30` minutes | BR-5 |
