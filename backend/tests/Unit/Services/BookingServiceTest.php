@@ -185,3 +185,33 @@ it('reuses an existing guest', function () {
 
     expect(Guest::count())->toBe(1);
 });
+
+it('throws when slot is taken by a different event type', function () {
+    $eventTypeA = EventType::factory()->duration30()->create();
+    $eventTypeB = EventType::factory()->duration30()->create();
+
+    AvailabilityRule::factory()->create([
+        'weekday' => Carbon::parse('2026-08-19')->format('w'),
+        'start_time' => '09:00:00',
+        'end_time' => '12:00:00',
+    ]);
+
+    Booking::factory()
+        ->forEventType($eventTypeA)
+        ->onDate('2026-08-19')
+        ->atTime('10:00:00')
+        ->create();
+
+    $service = makeBookingService();
+
+    try {
+        $service->create(
+            $eventTypeB,
+            '2026-08-19',
+            ['10:00'],
+            ['email' => 'other@example.com', 'name' => 'Other', 'phone' => '+7 (999) 000-00-00'],
+        );
+    } catch (BookingException $e) {
+        expect($e->getErrorCode())->toBe(ErrorCode::SLOT_TAKEN);
+    }
+});

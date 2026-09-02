@@ -213,7 +213,6 @@ final class BookingService
     private function ensureSlotsNotTaken(EventType $eventType, string $date, array $requestedSlots): void
     {
         $activeBookings = Booking::query()
-            ->where('event_type_id', $eventType->id)
             ->whereDate('date', $date)
             ->whereIn('status', [BookingStatus::PENDING->value, BookingStatus::CONFIRMED->value])
             ->get();

@@ -56,7 +56,7 @@ final class SlotService
                 $end = $this->roundEndTimeUp(Carbon::parse("{$dateString} {$rule->end_time}"));
                 $duration = $eventType->duration_minutes;
 
-                $bookings = $this->activeBookingsForDate($eventType->id, $dateString);
+                $bookings = $this->activeBookingsForDate($dateString);
 
                 $slots = [];
                 $current = $start->copy();
@@ -111,10 +111,9 @@ final class SlotService
     /**
      * @return array<int, Booking>
      */
-    private function activeBookingsForDate(int $eventTypeId, string $dateString): array
+    private function activeBookingsForDate(string $dateString): array
     {
         return Booking::query()
-            ->where('event_type_id', $eventTypeId)
             ->whereDate('date', $dateString)
             ->whereIn('status', [BookingStatus::PENDING->value, BookingStatus::CONFIRMED->value])
             ->orderBy('starts_at')

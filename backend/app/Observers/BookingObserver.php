@@ -34,13 +34,10 @@ final class BookingObserver
 
     private function invalidateForBooking(Booking $booking): void
     {
-        /** @var EventType|null $eventType */
-        $eventType = $booking->eventType;
+        $dateString = $booking->date->format('Y-m-d');
 
-        if ($eventType === null) {
-            return;
-        }
-
-        $this->slotService->invalidate($eventType, $booking->date->format('Y-m-d'));
+        EventType::query()->each(
+            fn (EventType $eventType) => $this->slotService->invalidate($eventType, $dateString),
+        );
     }
 }

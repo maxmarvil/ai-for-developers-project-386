@@ -89,7 +89,6 @@ class Booking extends Model
     {
         return static::query()
             ->where('id', '!=', $this->id)
-            ->where('event_type_id', $this->event_type_id)
             ->where('status', BookingStatus::CONFIRMED->value)
             ->where('starts_at', '<', $this->ends_at)
             ->where('ends_at', '>', $this->starts_at)

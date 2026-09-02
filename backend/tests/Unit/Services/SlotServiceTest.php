@@ -171,3 +171,26 @@ it('ignores soft deleted bookings', function () {
 
     expect($slots[0]['status'])->toBe(SlotStatus::FREE->value);
 });
+
+it('marks slot as taken when booked by a different event type', function () {
+    $eventTypeA = EventType::factory()->create(['duration_minutes' => 30]);
+    $eventTypeB = EventType::factory()->create(['duration_minutes' => 30]);
+
+    AvailabilityRule::factory()->create([
+        'weekday' => Carbon::parse('2026-08-19')->format('w'),
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+    ]);
+
+    Booking::factory()
+        ->forEventType($eventTypeA)
+        ->onDate('2026-08-19')
+        ->atTime('09:00:00')
+        ->confirmed()
+        ->create();
+
+    $service = new SlotService;
+    $slots = $service->generate($eventTypeB, Carbon::parse('2026-08-19'));
+
+    expect($slots[0]['status'])->toBe(SlotStatus::CONFIRMED->value);
+});
